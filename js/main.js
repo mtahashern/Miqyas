@@ -400,10 +400,10 @@
 
   function inferClassification(category, description = "") {
     const text = `${category || ""} ${description || ""}`.toLowerCase();
-    const expense = /\b(monthly phone bill|phone bill|cell phone bill|internet bill|utility bill|utilities|advertising expense|business advertising|business expense|office expense|software subscription|subscription fee|membership fee)\b/;
+    const expense = /\b(monthly phone bill|phone bill|cell phone bill|internet bill|utility bill|utilities|advertising expense|business advertising|business expense|office expense|business supplies?|office supplies?|supplies purchase|equipment purchase|transportation expense|travel expense|mileage expense|transit expense|fuel expense|software subscription|subscription fee|membership fee)\b/;
     const haram = /\b(gambling|betting|casino|alcohol|liquor|wine|beer|pork|swine|adult entertainment|porn|illegal drug|drug trafficking|interest-only lending|riba)\b/;
     const mixed = /\b(bank|banking|finance|financial|loan|lending|mortgage|insurance|investment|broker|brokerage|advertising|media|government|legal|compliance|conventional)\b/;
-    const halal = /\b(masjid|mosque|islamic centre|islamic center|imam|madrasa|madrasah|quran|charity|nonprofit|non-profit|zakat|sadaqah|halal|teaching|teacher|education|healthcare|medical|nursing|software|engineering|construction|trades|freelance design|design|retail|restaurant|food|salary|wages|tips|gift|inheritance|rent|rental)\b/;
+    const halal = /\b(masjid|mosque|islamic centre|islamic center|imam|madrasa|madrasah|quran|charity|nonprofit|non-profit|zakat|sadaqah|halal|teaching|teacher|education|healthcare|medical|nursing|software|engineering|construction|trades|freelance design|freelance|professional work|professional services|consulting|design|retail|restaurant|food|salary|wages|tips|gift|inheritance|rent|rental)\b/;
     if (expense.test(text)) return "expense";
     if (haram.test(text)) return "haram";
     if (mixed.test(text)) return "mixed";
@@ -418,21 +418,22 @@
 
   function normalizeImportedRows(rawRows) {
     if (!rawRows || !rawRows.length) return [];
-    const first = Array.isArray(rawRows[0]) ? rawRows[0].map((v) => String(v).trim().toLowerCase()) : Object.keys(rawRows[0]).map((v) => v.toLowerCase());
-    const hasHeader = first.some((v) => ["category", "classification", "amount", "halal_portion", "halal portion", "income", "description"].includes(v));
-    const headers = hasHeader ? first : ["category", "classification", "amount", "halal_portion"];
+    const normalizeHeader = (value) => String(value ?? "").trim().toLowerCase().replace(/[()$]/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+    const first = Array.isArray(rawRows[0]) ? rawRows[0].map(normalizeHeader) : Object.keys(rawRows[0]).map(normalizeHeader);
+    const hasHeader = first.some((v) => ["category", "classification", "amount", "amount cad", "amount canadian dollars", "halal portion", "income", "description", "payment", "earnings"].includes(v));
+    const headers = hasHeader ? first : ["category", "classification", "amount", "halal portion"];
     const rows = hasHeader ? rawRows.slice(1) : rawRows;
     return rows.map((row) => {
-      const values = Array.isArray(row) ? row : headers.map((header) => { const key = Object.keys(row).find((candidate) => candidate.toLowerCase().replace(/ /g, "_") === header.replace(/ /g, "_")); return key ? row[key] : ""; });
-      const pick = (...names) => { const index = headers.findIndex((h) => names.includes(h)); return index >= 0 ? String(values[index] ?? "").trim() : ""; };
+      const values = Array.isArray(row) ? row : headers.map((header) => { const key = Object.keys(row).find((candidate) => normalizeHeader(candidate) === header); return key ? row[key] : ""; });
+      const pick = (...names) => { const wanted = names.map(normalizeHeader); const index = headers.findIndex((h) => wanted.includes(h)); return index >= 0 ? String(values[index] ?? "").trim() : ""; };
       let category = pick("category", "income", "description", "item", "name", "work", "source");
       const explicit = pick("classification", "class", "status").toLowerCase();
-      const amountRaw = pick("amount", "value", "total", "income amount", "payment", "earnings", "cad");
+      const amountRaw = pick("amount", "amount cad", "amount canadian dollars", "value", "total", "income amount", "payment", "earnings", "cad", "price", "cost");
       const description = pick("description", "details", "notes", "work", "source");
       const embeddedAmount = !amountRaw ? extractAmount(category || description) : "";
       if (embeddedAmount) category = category.replace(/(?:CAD\s*|CA\$|\$)?\s*[0-9][0-9,]*(?:\.\d{1,2})?/i, "").replace(/[,:;|]+$/, "").trim();
-      const classification = ["halal", "haram", "mixed", "tentative"].includes(explicit) ? explicit : inferClassification(category, description);
-      return { category: category || description || "Imported income", classification, amount: extractAmount(amountRaw || embeddedAmount), halal_portion: extractAmount(pick("halal_portion", "halal portion", "eligible amount")) };
+      const classification = ["halal", "haram", "mixed", "tentative", "expense"].includes(explicit) ? explicit : inferClassification(category, description);
+      return { category: category || description || "", classification, amount: extractAmount(amountRaw || embeddedAmount), halal_portion: extractAmount(pick("halal portion", "halal_portion", "eligible amount")) };
     }).filter((row) => row.category || row.amount || row.classification || row.halal_portion);
   }
 
@@ -452,7 +453,7 @@
       const classificationMatch = line.match(/\b(halal|haram|mixed|tentative)\b/i);
       const numbers = line.match(/(?:CAD\s*|CA\$|\$)?\s*\d[\d,]*(?:\.\d{1,2})?/gi) || [];
       const category = line.replace(classificationMatch?.[0] || "", "").replace(/(?:CAD\s*|CA\$|\$)?\s*\d[\d,]*(?:\.\d{1,2})?/gi, "").replace(/[,:;|]+$/, "").trim();
-      return { category: category || "Imported income", classification: classificationMatch ? classificationMatch[1].toLowerCase() : inferClassification(category), amount: extractAmount(numbers[0] || ""), halal_portion: extractAmount(numbers[1] || "") };
+      return { category: category || "", classification: classificationMatch ? classificationMatch[1].toLowerCase() : inferClassification(category), amount: extractAmount(numbers[0] || ""), halal_portion: extractAmount(numbers[1] || "") };
     }).filter((row) => row.category || row.amount);
   }
 
