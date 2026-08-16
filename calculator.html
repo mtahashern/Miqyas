@@ -59,16 +59,14 @@
         <div class="form-step active">
           <h2>Income by category</h2>
           <p class="hint" style="margin-top:-0.6rem;margin-bottom:1rem">Add every income source
-          you received this hawl, then classify each one. Mixed income needs the halal portion
-          split out. Leave a row's classification unset and it's flagged for you; it will not be
-          counted toward zakat until you resolve it.</p>
+          you received this hawl, then classify each one. Mixed income needs the halal portion split out. Imported descriptions and amounts are used to suggest a preliminary Halal, Haram, Mixed, or Tentative classification. Review every suggestion before continuing; Tentative rows are not counted until resolved.</p>
 
           <div class="csv-upload">
             <label class="btn" for="csvFile">Upload document</label>
             <input type="file" id="csvFile" accept=".csv,.tsv,.xlsx,.xls,.pdf,.txt,.json,text/csv,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
             <a href="#" id="csvTemplateLink" download="miqyas-income-template.csv">Download CSV template</a>
             <span id="csvStatus" class="csv-status"></span>
-            <p class="hint">Accepted files include CSV, TSV, Excel, PDF, TXT, and JSON. The importer looks for category, classification, amount, and halal portion wherever they appear. Missing values stay blank for you to complete. Uploading replaces the rows below.</p>
+            <p class="hint">Accepted files include CSV, TSV, Excel, PDF, TXT, and JSON. The importer looks for category, description, work type, classification, amount, payment, earnings, and halal portion wherever they appear. It can extract amounts from text such as “Masjid tutoring, $250” and infer a preliminary classification. Unavailable fields remain editable. Uploading replaces the rows below.</p>
           </div>
 
           <section class="eligibility-panel" aria-labelledby="eligibilityHeading">

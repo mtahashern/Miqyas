@@ -252,7 +252,6 @@
           <option value="haram">Haram</option>
           <option value="mixed">Mixed</option>
           <option value="tentative">Tentative</option>
-          <option value="missing">Missing information</option>
         </select>
       </div>
       <div>
@@ -269,7 +268,7 @@
     incomeTable.appendChild(row);
 
     const clsSelect = row.querySelector(".row-class");
-    if (data.classification && ["halal","haram","mixed","tentative","missing"].includes(data.classification)) {
+    if (data.classification && ["halal","haram","mixed","tentative"].includes(data.classification)) {
       clsSelect.value = data.classification;
     }
     updateRowState(row);
@@ -283,12 +282,10 @@
     const cls = row.querySelector(".row-class").value;
     row.classList.toggle("is-mixed", cls === "mixed");
     const status = row.querySelector(".row-status");
-    const flagged = cls === "" || cls === "missing" || cls === "tentative";
+    const flagged = cls === "" || cls === "tentative";
     row.classList.toggle("flagged", flagged);
     if (cls === "") {
-      status.textContent = "No classification selected; excluded from zakat until resolved.";
-    } else if (cls === "missing") {
-      status.textContent = "Marked missing information; excluded from zakat until you can classify it.";
+      status.textContent = "Choose Halal, Haram, Mixed, or Tentative before continuing.";
     } else if (cls === "tentative") {
       status.textContent = "Marked tentative; Scholar Review Required, excluded from zakat for now.";
     } else {
@@ -318,11 +315,11 @@
 
   if (incomeTable) {
     const defaults = [
-      { category: "Salary / wages" },
-      { category: "Business income" },
-      { category: "Investment returns" },
-      { category: "Gifts / inheritance" },
-      { category: "Rental income" },
+      { category: "Salary / wages", classification: "halal" },
+      { category: "Business income", classification: "tentative" },
+      { category: "Investment returns", classification: "mixed" },
+      { category: "Gifts / inheritance", classification: "halal" },
+      { category: "Rental income", classification: "halal" },
     ];
     defaults.forEach(addIncomeRow);
 
@@ -346,7 +343,7 @@
         "Salary,halal,4200,\n" +
         "Freelance design work,mixed,1500,900\n" +
         "Inheritance received,tentative,3000,\n" +
-        "Gift from relative,missing,,\n" +
+        "Gift from relative,tentative,,\n" +
         "Investment dividends,halal,220,\n";
       templateLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvTemplate);
     }
@@ -364,7 +361,7 @@
         if (!rows.length) throw new Error("No usable rows found");
         incomeTable.innerHTML = "";
         rows.forEach(addIncomeRow);
-        csvStatus.textContent = `Loaded ${rows.length} row${rows.length === 1 ? "" : "s"} from ${file.name}. Missing values were left blank.`;
+        csvStatus.textContent = `Loaded ${rows.length} row${rows.length === 1 ? "" : "s"} from ${file.name}. Categories, amounts, and preliminary classifications were inferred where possible; unavailable fields remain editable.`;
         csvStatus.className = "csv-status";
       } catch (error) {
         csvStatus.textContent = "This file could not be read. Try a CSV, TSV, Excel, PDF, TXT, or JSON file with one income item per row.";
@@ -392,6 +389,22 @@
     return parseCsv(text);
   }
 
+  function inferClassification(category, description = "") {
+    const text = `${category || ""} ${description || ""}`.toLowerCase();
+    const haram = /\b(gambling|betting|casino|alcohol|liquor|wine|beer|pork|swine|adult entertainment|porn|illegal drug|drug trafficking|interest-only lending|riba)\b/;
+    const mixed = /\b(bank|banking|finance|financial|loan|lending|mortgage|insurance|investment|broker|brokerage|advertising|media|government|legal|compliance|conventional)\b/;
+    const halal = /\b(masjid|mosque|islamic centre|islamic center|imam|madrasa|madrasah|quran|charity|nonprofit|non-profit|zakat|sadaqah|halal|teaching|teacher|education|healthcare|medical|nursing|software|engineering|construction|trades|freelance design|design|retail|restaurant|food|salary|wages|tips|gift|inheritance|rent|rental)\b/;
+    if (haram.test(text)) return "haram";
+    if (mixed.test(text)) return "mixed";
+    if (halal.test(text)) return "halal";
+    return "tentative";
+  }
+
+  function extractAmount(value) {
+    const match = String(value ?? "").match(/(?:CAD|CA\$|\$)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i);
+    return match ? match[1].replace(/,/g, "") : "";
+  }
+
   function normalizeImportedRows(rawRows) {
     if (!rawRows || !rawRows.length) return [];
     const first = Array.isArray(rawRows[0]) ? rawRows[0].map((v) => String(v).trim().toLowerCase()) : Object.keys(rawRows[0]).map((v) => v.toLowerCase());
@@ -401,8 +414,14 @@
     return rows.map((row) => {
       const values = Array.isArray(row) ? row : headers.map((header) => { const key = Object.keys(row).find((candidate) => candidate.toLowerCase().replace(/ /g, "_") === header.replace(/ /g, "_")); return key ? row[key] : ""; });
       const pick = (...names) => { const index = headers.findIndex((h) => names.includes(h)); return index >= 0 ? String(values[index] ?? "").trim() : ""; };
-      const classification = pick("classification", "class", "status").toLowerCase();
-      return { category: pick("category", "income", "description", "item", "name"), classification: ["halal", "haram", "mixed", "tentative", "missing"].includes(classification) ? classification : "", amount: pick("amount", "value", "total", "income amount"), halal_portion: pick("halal_portion", "halal portion", "halal", "eligible amount") };
+      let category = pick("category", "income", "description", "item", "name", "work", "source");
+      const explicit = pick("classification", "class", "status").toLowerCase();
+      const amountRaw = pick("amount", "value", "total", "income amount", "payment", "earnings", "cad");
+      const description = pick("description", "details", "notes", "work", "source");
+      const embeddedAmount = !amountRaw ? extractAmount(category || description) : "";
+      if (embeddedAmount) category = category.replace(/(?:CAD\s*|CA\$|\$)?\s*[0-9][0-9,]*(?:\.\d{1,2})?/i, "").replace(/[,:;|]+$/, "").trim();
+      const classification = ["halal", "haram", "mixed", "tentative"].includes(explicit) ? explicit : inferClassification(category, description);
+      return { category: category || description || "Imported income", classification, amount: extractAmount(amountRaw || embeddedAmount), halal_portion: extractAmount(pick("halal_portion", "halal portion", "eligible amount")) };
     }).filter((row) => row.category || row.amount || row.classification || row.halal_portion);
   }
 
@@ -419,10 +438,11 @@
       lines.push(...Array.from(grouped.values()).map((line) => line.trim()).filter(Boolean));
     }
     return lines.map((line) => {
-      const classificationMatch = line.match(/\b(halal|haram|mixed|tentative|missing)\b/i);
-      const numbers = line.match(/(?:\$|CAD\s*)?\d[\d,]*(?:\.\d{1,2})?/g) || [];
-      return { category: line.replace(classificationMatch?.[0] || "", "").replace(/(?:\$|CAD\s*)?\d[\d,]*(?:\.\d{1,2})?/g, "").replace(/[,:;|]+$/, "").trim(), classification: classificationMatch ? classificationMatch[1].toLowerCase() : "", amount: numbers[0] || "", halal_portion: numbers[1] || "" };
-    }).filter((row) => row.category);
+      const classificationMatch = line.match(/\b(halal|haram|mixed|tentative)\b/i);
+      const numbers = line.match(/(?:CAD\s*|CA\$|\$)?\s*\d[\d,]*(?:\.\d{1,2})?/gi) || [];
+      const category = line.replace(classificationMatch?.[0] || "", "").replace(/(?:CAD\s*|CA\$|\$)?\s*\d[\d,]*(?:\.\d{1,2})?/gi, "").replace(/[,:;|]+$/, "").trim();
+      return { category: category || "Imported income", classification: classificationMatch ? classificationMatch[1].toLowerCase() : inferClassification(category), amount: extractAmount(numbers[0] || ""), halal_portion: extractAmount(numbers[1] || "") };
+    }).filter((row) => row.category || row.amount);
   }
 
   function parseCsv(text) {
@@ -474,8 +494,8 @@
     let incomeFlags = [];
 
     incomeRows.forEach((r) => {
-      if (r.classification === "" || r.classification === "missing") {
-        incomeFlags.push(`"${r.category}" is missing a classification; excluded from zakat until you can classify it.`);
+      if (r.classification === "") {
+        incomeFlags.push(`"${r.category}" needs a Halal, Haram, Mixed, or Tentative classification before it can be included.`);
       } else if (r.classification === "tentative") {
         incomeFlags.push(`"${r.category}" is marked Tentative; Scholar Review Required. Excluded from zakat for now.`);
       } else if (r.classification === "halal") {
