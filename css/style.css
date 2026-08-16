@@ -217,7 +217,9 @@ section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
 .warning-box { border: 1px solid var(--rust); padding: 0.9rem 1rem; font-size: 0.88rem; margin-top: 1.2rem; }
 .warning-box strong { color: var(--rust); }
 .explain-box { border: 1px solid var(--line); background: var(--parchment-dim); padding: 0.9rem 1rem; font-size: 0.85rem; color: var(--grey); margin-top: 1.2rem; }
-.explain-box strong { color: var(--ink); }
+  .explain-box strong { color: var(--ink); }
+  .result-review-notice { border: 1px solid var(--brass); background: rgba(184,134,59,0.08); padding: 0.9rem 1rem; font-size: 0.84rem; color: var(--ink); margin-top: 1.2rem; }
+  .result-review-notice strong { color: var(--verdigris); }
 
 /* ---------- income category table ---------- */
 .csv-upload {
