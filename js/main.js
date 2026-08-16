@@ -1,4 +1,4 @@
-// Miqyas — shared interaction logic. No frameworks, no build step.
+// Miqyas; shared interaction logic. No frameworks, no build step.
 
 (function () {
   const toggle = document.getElementById("navToggle");
@@ -7,6 +7,38 @@
     toggle.addEventListener("click", () => {
       const open = nav.classList.toggle("open");
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+})();
+
+// ---------- Masarif directory ----------
+(function () {
+  const filter = document.getElementById("regionFilter");
+  const cards = Array.from(document.querySelectorAll("#organizationList [data-region]"));
+  const empty = document.getElementById("filterEmpty");
+  if (filter && cards.length) {
+    filter.addEventListener("change", () => {
+      const value = filter.value;
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = value === "all" || card.dataset.region === value;
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (empty) empty.hidden = visible !== 0;
+    });
+  }
+
+  const form = document.getElementById("masarifRequestForm");
+  const status = document.getElementById("masarifFormStatus");
+  if (form && status) {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const org = document.getElementById("orgName").value.trim();
+      const email = document.getElementById("orgContact").value.trim();
+      status.textContent = `Thank you. ${org} was recorded for review. We will follow up at ${email}.`;
+      status.className = "hint csv-status";
+      form.reset();
     });
   }
 })();
@@ -57,7 +89,7 @@
 
   const badge = document.getElementById("activeMadhhab");
   if (!MADHHAB) {
-    // No school locked in — send back to the selector rather than guess.
+    // No school locked in; send back to the selector rather than guess.
     window.location.href = "index.html";
     return;
   }
@@ -171,11 +203,11 @@
     const flagged = cls === "" || cls === "missing" || cls === "tentative";
     row.classList.toggle("flagged", flagged);
     if (cls === "") {
-      status.textContent = "No classification selected — excluded from zakat until resolved.";
+      status.textContent = "No classification selected; excluded from zakat until resolved.";
     } else if (cls === "missing") {
-      status.textContent = "Marked missing information — excluded from zakat until you can classify it.";
+      status.textContent = "Marked missing information; excluded from zakat until you can classify it.";
     } else if (cls === "tentative") {
-      status.textContent = "Marked tentative — Scholar Review Required, excluded from zakat for now.";
+      status.textContent = "Marked tentative; Scholar Review Required, excluded from zakat for now.";
     } else {
       status.textContent = "";
     }
@@ -225,64 +257,87 @@
       templateLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvTemplate);
     }
 
-    // ---- CSV upload ----
+    // ---- Multi-format document upload ----
     const csvFile = document.getElementById("csvFile");
     const csvStatus = document.getElementById("csvStatus");
-    csvFile.addEventListener("change", () => {
+    csvFile.addEventListener("change", async () => {
       const file = csvFile.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const rows = parseCsv(String(reader.result));
-          if (!rows.length) {
-            csvStatus.textContent = "No rows found in that file.";
-            csvStatus.className = "csv-status err";
-            return;
-          }
-          incomeTable.innerHTML = "";
-          rows.forEach(addIncomeRow);
-          csvStatus.textContent = `Loaded ${rows.length} row${rows.length === 1 ? "" : "s"} from ${file.name}.`;
-          csvStatus.className = "csv-status";
-        } catch (e) {
-          csvStatus.textContent = "Couldn't read that CSV — check the column order and try again.";
-          csvStatus.className = "csv-status err";
-        }
-      };
-      reader.onerror = () => {
-        csvStatus.textContent = "Couldn't read that file.";
+      csvStatus.textContent = `Reading ${file.name}...`;
+      csvStatus.className = "csv-status";
+      try {
+        const rows = await parseUploadedDocument(file);
+        if (!rows.length) throw new Error("No usable rows found");
+        incomeTable.innerHTML = "";
+        rows.forEach(addIncomeRow);
+        csvStatus.textContent = `Loaded ${rows.length} row${rows.length === 1 ? "" : "s"} from ${file.name}. Missing values were left blank.`;
+        csvStatus.className = "csv-status";
+      } catch (error) {
+        csvStatus.textContent = "This file could not be read. Try a CSV, TSV, Excel, PDF, TXT, or JSON file with one income item per row.";
         csvStatus.className = "csv-status err";
-      };
-      reader.readAsText(file);
-      csvFile.value = "";
+      } finally {
+        csvFile.value = "";
+      }
     });
   }
 
-  function parseCsv(text) {
-    const lines = text.split(/\r\n|\n|\r/).map((l) => l.trim()).filter((l) => l.length);
-    if (!lines.length) return [];
-    const splitLine = (line) => line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
-    let start = 0;
-    const first = splitLine(lines[0]).map((c) => c.toLowerCase());
-    if (first[0] === "category") start = 1; // skip header row
-    const validClass = ["halal", "haram", "mixed", "tentative", "missing"];
-    const rows = [];
-    for (let i = start; i < lines.length; i++) {
-      const cells = splitLine(lines[i]);
-      if (!cells.length || !cells[0]) continue;
-      const category = cells[0] || "";
-      let classification = (cells[1] || "").toLowerCase();
-      if (!validClass.includes(classification)) classification = "";
-      const amount = parseFloat(cells[2]);
-      const halalPortion = parseFloat(cells[3]);
-      rows.push({
-        category,
-        classification,
-        amount: isNaN(amount) ? 0 : amount,
-        halal_portion: isNaN(halalPortion) ? 0 : halalPortion,
-      });
+  async function parseUploadedDocument(file) {
+    const extension = file.name.toLowerCase().split(".").pop();
+    if (["xlsx", "xls"].includes(extension)) {
+      if (!window.XLSX) throw new Error("Spreadsheet library unavailable");
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      return normalizeImportedRows(XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }));
     }
-    return rows;
+    if (extension === "pdf") return parsePdfDocument(file);
+    const text = await file.text();
+    if (extension === "json") {
+      const data = JSON.parse(text);
+      return normalizeImportedRows(Array.isArray(data) ? data : (data.rows || [data]));
+    }
+    return parseCsv(text);
+  }
+
+  function normalizeImportedRows(rawRows) {
+    if (!rawRows || !rawRows.length) return [];
+    const first = Array.isArray(rawRows[0]) ? rawRows[0].map((v) => String(v).trim().toLowerCase()) : Object.keys(rawRows[0]).map((v) => v.toLowerCase());
+    const hasHeader = first.some((v) => ["category", "classification", "amount", "halal_portion", "halal portion", "income", "description"].includes(v));
+    const headers = hasHeader ? first : ["category", "classification", "amount", "halal_portion"];
+    const rows = hasHeader ? rawRows.slice(1) : rawRows;
+    return rows.map((row) => {
+      const values = Array.isArray(row) ? row : headers.map((header) => { const key = Object.keys(row).find((candidate) => candidate.toLowerCase().replace(/ /g, "_") === header.replace(/ /g, "_")); return key ? row[key] : ""; });
+      const pick = (...names) => { const index = headers.findIndex((h) => names.includes(h)); return index >= 0 ? String(values[index] ?? "").trim() : ""; };
+      const classification = pick("classification", "class", "status").toLowerCase();
+      return { category: pick("category", "income", "description", "item", "name"), classification: ["halal", "haram", "mixed", "tentative", "missing"].includes(classification) ? classification : "", amount: pick("amount", "value", "total", "income amount"), halal_portion: pick("halal_portion", "halal portion", "halal", "eligible amount") };
+    }).filter((row) => row.category || row.amount || row.classification || row.halal_portion);
+  }
+
+  async function parsePdfDocument(file) {
+    const pdfjs = window.pdfjsLib;
+    if (!pdfjs) throw new Error("PDF library unavailable");
+    const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+    const lines = [];
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      const grouped = new Map();
+      content.items.forEach((item) => { const y = Math.round(item.transform?.[5] || 0); const key = String(y); grouped.set(key, `${grouped.get(key) || ""} ${item.str}`.trim()); });
+      lines.push(...Array.from(grouped.values()).map((line) => line.trim()).filter(Boolean));
+    }
+    return lines.map((line) => {
+      const classificationMatch = line.match(/\b(halal|haram|mixed|tentative|missing)\b/i);
+      const numbers = line.match(/(?:\$|CAD\s*)?\d[\d,]*(?:\.\d{1,2})?/g) || [];
+      return { category: line.replace(classificationMatch?.[0] || "", "").replace(/(?:\$|CAD\s*)?\d[\d,]*(?:\.\d{1,2})?/g, "").replace(/[,:;|]+$/, "").trim(), classification: classificationMatch ? classificationMatch[1].toLowerCase() : "", amount: numbers[0] || "", halal_portion: numbers[1] || "" };
+    }).filter((row) => row.category);
+  }
+
+  function parseCsv(text) {
+    const lines = text.split(/\r\n|\n|\r/).map((line) => line.trim()).filter(Boolean);
+    if (!lines.length) return [];
+    const delimiter = lines[0].includes("\t") ? "\t" : ",";
+    const splitLine = (line) => line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, ""));
+    const rawRows = lines.map(splitLine);
+    return normalizeImportedRows(rawRows);
   }
 
   // ---------- Nisab: fixed values, not live prices ----------
@@ -290,18 +345,18 @@
   const GOLD_NISAB_GRAMS = 87.48;    // 20 mithqal
   const SILVER_NISAB_GRAMS = 612.36; // 200 dirhams
 
-  // Price per gram in CAD — THE ONLY PART YOU SHOULD UPDATE.
+  // Price per gram in CAD; THE ONLY PART YOU SHOULD UPDATE.
   // Set this once, right before the event, using that day's spot price.
-  // Do not wire this to a live price API — the event rules require a
+  // Do not wire this to a live price API; the event rules require a
   // fixed value used for every calculation and test case.
-  const GOLD_PRICE_PER_GRAM_CAD = 154.00;   // ~CAD spot mid-2026 — update day-of if organizers provide a figure
-  const SILVER_PRICE_PER_GRAM_CAD = 1.41;   // ~CAD spot mid-2026 — update day-of if organizers provide a figure
+  const GOLD_PRICE_PER_GRAM_CAD = 154.00;   // ~CAD spot mid-2026; update day-of if organizers provide a figure
+  const SILVER_PRICE_PER_GRAM_CAD = 1.41;   // ~CAD spot mid-2026; update day-of if organizers provide a figure
 
   const NISAB_GOLD_CAD = +(GOLD_NISAB_GRAMS * GOLD_PRICE_PER_GRAM_CAD).toFixed(2);
   const NISAB_SILVER_CAD = +(SILVER_NISAB_GRAMS * SILVER_PRICE_PER_GRAM_CAD).toFixed(2);
 
   // All four schools in this build use the silver threshold: it is lower,
-  // so it brings more people into zakat obligation — the more cautious
+  // so it brings more people into zakat obligation; the more cautious
   // reading, and the one most commonly used across the madhahib for this
   // kind of general calculator.
   const ACTIVE_NISAB_CAD = NISAB_SILVER_CAD;
@@ -326,14 +381,14 @@
 
     incomeRows.forEach((r) => {
       if (r.classification === "" || r.classification === "missing") {
-        incomeFlags.push(`"${r.category}" is missing a classification — excluded from zakat until you can classify it.`);
+        incomeFlags.push(`"${r.category}" is missing a classification; excluded from zakat until you can classify it.`);
       } else if (r.classification === "tentative") {
-        incomeFlags.push(`"${r.category}" is marked Tentative — Scholar Review Required. Excluded from zakat for now.`);
+        incomeFlags.push(`"${r.category}" is marked Tentative; Scholar Review Required. Excluded from zakat for now.`);
       } else if (r.classification === "halal") {
         incomeHalalTotal += r.amount;
       } else if (r.classification === "haram") {
         incomeHaramTotal += r.amount;
-        incomeFlags.push(`"${r.category}" identified as haram income — separated from zakatable wealth. Removing it isn't zakat; it should still be disposed of appropriately.`);
+        incomeFlags.push(`"${r.category}" identified as haram income; separated from zakatable wealth. Removing it isn't zakat; it should still be disposed of appropriately.`);
       } else if (r.classification === "mixed") {
         const halalPart = Math.min(r.halal_portion, r.amount);
         const haramPart = r.amount - halalPart;
@@ -341,10 +396,10 @@
           incomeHalalTotal += halalPart;
           incomeHaramTotal += haramPart;
         } else {
-          // Retained mixed amount stays zakatable in full — not exempt solely for being mixed.
+          // Retained mixed amount stays zakatable in full; not exempt solely for being mixed.
           incomeHalalTotal += r.amount;
         }
-        incomeFlags.push(`"${r.category}" is mixed income — ${mixedDisposed
+        incomeFlags.push(`"${r.category}" is mixed income; ${mixedDisposed
           ? `only its halal portion ($${halalPart.toLocaleString()}) is zakatable; the haram portion is separated out.`
           : `you're retaining the full amount, so it stays zakatable in full per the shared rule on retained mixed wealth.`}`);
       }
@@ -370,7 +425,7 @@
       debtDeducted = debtNear; // near-term qualifying debts only
       if (receivable > 0) {
         if (receivableConfidence === "doubtful") {
-          flags.push("Doubtful receivable — Scholar Review Required; calculation may be delayed until received.");
+          flags.push("Doubtful receivable; Scholar Review Required; calculation may be delayed until received.");
         } else {
           receivableIncluded = receivable;
         }
@@ -385,7 +440,7 @@
       // No personal-debt deduction at all.
       if (receivable > 0) {
         if (receivableConfidence === "doubtful") {
-          flags.push("Doubtful receivable — flagged Tentative / Scholar Review Required.");
+          flags.push("Doubtful receivable; flagged Tentative / Scholar Review Required.");
         } else {
           receivableIncluded = receivable;
         }
@@ -408,14 +463,14 @@
     document.getElementById("resultFigure").textContent =
       "$" + zakatDue.toLocaleString(undefined, { maximumFractionDigits: 2 });
     document.getElementById("resultStatus").textContent = aboveNisab
-      ? "At or above nisab ($" + ACTIVE_NISAB_CAD.toLocaleString() + " CAD, silver standard) — zakat is due."
-      : "Below nisab ($" + ACTIVE_NISAB_CAD.toLocaleString() + " CAD, silver standard) — no zakat due this year.";
+      ? "At or above nisab ($" + ACTIVE_NISAB_CAD.toLocaleString() + " CAD, silver standard); zakat is due."
+      : "Below nisab ($" + ACTIVE_NISAB_CAD.toLocaleString() + " CAD, silver standard); no zakat due this year.";
 
     const summary = document.getElementById("incomeSummary");
     if (summary) {
       summary.innerHTML = `
         <div class="halal"><span class="label">Zakatable income (halal / disposed-mixed)</span><span class="num">$${incomeHalalTotal.toLocaleString()}</span></div>
-        <div class="haram"><span class="label">Haram income — separate, not zakatable</span><span class="num">$${incomeHaramTotal.toLocaleString()}</span></div>
+        <div class="haram"><span class="label">Haram income; separate, not zakatable</span><span class="num">$${incomeHaramTotal.toLocaleString()}</span></div>
       `;
     }
 

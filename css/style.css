@@ -273,3 +273,92 @@ section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
 .income-summary .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--grey); }
 .income-summary .halal .num { color: var(--verdigris); }
 .income-summary .haram .num { color: var(--rust); }
+
+/* ---------- homepage landing composition ---------- */
+.home-hero { padding-top: clamp(3rem, 8vw, 6.5rem); padding-bottom: clamp(3rem, 7vw, 6rem); border-bottom: 1px solid var(--line); }
+.home-hero-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr); gap: clamp(2rem, 8vw, 8rem); align-items: end; }
+.hero-copy h1 { font-size: clamp(3rem, 8vw, 6rem); max-width: 9ch; line-height: 0.96; letter-spacing: -0.035em; margin-bottom: 1.3rem; }
+.hero-copy h1 em { color: var(--verdigris); font-style: normal; }
+.hero-copy .lede { max-width: 36rem; font-size: clamp(1.05rem, 2vw, 1.25rem); }
+.hero-actions { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; margin-top: 1.8rem; }
+.text-link { color: var(--verdigris); font-size: 0.9rem; font-weight: 600; text-underline-offset: 4px; }
+.ledger-note { border: 1px solid var(--ink); padding: 1.15rem 1.2rem 1.25rem; background: var(--parchment-dim); position: relative; }
+.ledger-note::before { content: ""; position: absolute; top: 0; bottom: 0; left: 1.1rem; border-left: 1px solid var(--line); }
+.ledger-note-top, .ledger-steps, .ledger-footnote { position: relative; }
+.ledger-note-top { display: flex; justify-content: space-between; padding-left: 1.6rem; }
+.mono-label, .section-index, .card-index, .principle-no, .ledger-mark, .step-number { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.mono-label { color: var(--verdigris); }
+.ledger-mark { color: var(--brass); }
+.ledger-rule { border-top: 1px solid var(--line); margin: 1rem 0 0.3rem 1.6rem; }
+.ledger-steps { list-style: none; padding: 0; margin: 0; }
+.ledger-steps li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.7rem; padding: 1rem 0 1rem 1.6rem; border-bottom: 1px solid var(--line); }
+.ledger-steps li:last-child { border-bottom: 0; }
+.step-number { color: var(--brass); padding-top: 0.15rem; }
+.ledger-steps b { display: block; font-family: var(--serif); font-size: 1.15rem; font-weight: 600; }
+.ledger-steps small { display: block; color: var(--grey); margin-top: 0.1rem; }
+.ledger-footnote { color: var(--grey); font-size: 0.78rem; margin: 0.8rem 0 0 1.6rem; }
+.choose-section { padding-top: clamp(3rem, 7vw, 5.5rem); }
+.section-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; }
+.section-heading h2 { margin-bottom: 0; }
+.section-index { color: var(--grey); white-space: nowrap; }
+.choose-section > .wrap > .lede { margin-top: 0.9rem; }
+.school-card { position: relative; min-height: 15rem; padding: 1.5rem 1.55rem 1.35rem; }
+.school-card .card-index { color: var(--brass); margin-bottom: auto; }
+.school-card h3 { font-size: 1.55rem; margin-bottom: 0.2rem; }
+.school-card .trait { max-width: 29rem; }
+.card-arrow { position: absolute; top: 1.35rem; right: 1.4rem; color: var(--verdigris); font-size: 1.15rem; }
+.school-card.selected .card-index, .school-card.selected .card-arrow { color: var(--brass) !important; }
+.home-bridge { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--parchment-dim); }
+.bridge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+.bridge-grid h2 { max-width: 13ch; font-size: clamp(1.8rem, 4vw, 3rem); }
+.bridge-grid .lede { max-width: 34rem; }
+.home-principles { padding-bottom: clamp(3rem, 7vw, 6rem); }
+.principle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; border-top: 1px solid var(--line); margin-top: 1.4rem; }
+.principle-grid > div { padding-top: 1rem; border-top: 2px solid var(--verdigris); }
+.principle-no { color: var(--brass); }
+.principle-grid h3 { margin-top: 2rem; font-size: 1.2rem; }
+.principle-grid p { color: var(--grey); font-size: 0.9rem; max-width: 19rem; }
+@media (max-width: 760px) {
+  .home-hero-grid, .bridge-grid { grid-template-columns: 1fr; }
+  .home-hero-grid { gap: 3rem; }
+  .hero-copy h1 { font-size: clamp(3.2rem, 16vw, 5rem); }
+  .principle-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .principle-grid h3 { margin-top: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- homepage-only Islamic manuscript treatment ---------- */
+.home-page .site-header { background: var(--parchment); }
+.home-page .home-hero { position: relative; overflow: hidden; background: var(--verdigris); color: var(--parchment); border-bottom-color: var(--brass); isolation: isolate; }
+.home-page .home-hero::after { content: ""; position: absolute; inset: 1.25rem; border: 1px solid rgba(243,237,224,0.22); pointer-events: none; z-index: -1; }
+.home-page .hero-copy, .home-page .ledger-note { position: relative; z-index: 2; }
+.home-page .hero-copy h1, .home-page .hero-copy p, .home-page .hero-copy .lede { color: var(--parchment); }
+.home-page .hero-copy h1 em { color: var(--brass); }
+.home-page .hero-copy .eyebrow, .home-page .text-link { color: var(--parchment); }
+.home-page .hero-copy .text-link { text-decoration-color: var(--brass); }
+.home-page .hero-copy .btn.primary { background: var(--brass); border-color: var(--brass); color: var(--ink); }
+.home-page .hero-copy .btn.primary:hover { background: var(--parchment); border-color: var(--parchment); color: var(--ink); }
+.arabic-mark { color: var(--brass) !important; font-family: var(--serif); font-size: 1.25rem; letter-spacing: 0.1em; margin: 0 0 0.8rem; }
+.hero-ornament { position: absolute; color: var(--brass); opacity: 0.42; pointer-events: none; z-index: 0; }
+.hero-star { width: clamp(15rem, 35vw, 28rem); height: clamp(15rem, 35vw, 28rem); right: 20%; top: 8%; }
+.hero-star svg { width: 100%; height: 100%; }
+.hero-lantern { position: absolute; color: var(--brass); opacity: 0.75; pointer-events: none; z-index: 1; width: 3.6rem; }
+.hero-lantern-left { left: 3%; top: 1.5rem; }
+.hero-lantern-right { right: 4%; bottom: 0.8rem; transform: scale(0.78); opacity: 0.42; }
+.home-page .ledger-note { background: var(--parchment); border-color: var(--brass); color: var(--ink); }
+.home-page .ledger-note::before { border-color: var(--line); }
+.home-page .ledger-note-top, .home-page .ledger-steps, .home-page .ledger-footnote { color: var(--ink); }
+.home-page .ledger-note .mono-label { color: var(--verdigris); }
+.home-page .ledger-note .ledger-mark, .home-page .ledger-note .step-number { color: var(--rust); }
+.home-page .home-bridge { background: var(--ink); border-color: var(--brass); }
+.home-page .home-bridge h2, .home-page .home-bridge p { color: var(--parchment); }
+.home-page .home-bridge .eyebrow, .home-page .home-bridge .text-link { color: var(--brass); }
+.home-page .home-principles { background: var(--parchment); }
+@media (max-width: 760px) {
+  .home-page .home-hero::after { inset: 0.75rem; }
+  .hero-star { right: -5rem; top: 3rem; opacity: 0.3; }
+  .hero-lantern-left { left: auto; right: 1.8rem; top: 1rem; transform: scale(0.65); transform-origin: top right; }
+  .hero-lantern-right { display: none; }
+}
