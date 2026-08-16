@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miqyas — Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <line x1="2" y1="16" x2="22" y2="16" stroke="#33544B" stroke-width="1.6"/>
+        <circle cx="14" cy="16" r="3" fill="#B8863B"/>
+      </svg>
+      <span class="word">Miqyas</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <nav class="nav" id="siteNav">
+      <a href="index.html">Choose Madhhab</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="masarif.html">Masarif</a>
+      <a href="about.html">About</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section style="padding-bottom:0">
+    <div class="wrap">
+      <span class="eyebrow">Calculator</span>
+      <div style="display:flex;align-items:baseline;gap:0.8rem;flex-wrap:wrap">
+        <h1 style="margin-bottom:0.2em">Enter your income and assets</h1>
+        <span class="tag verdi" id="activeMadhhab">—</span>
+      </div>
+      <p class="lede">Every question below applies only the selected madhhab's rules. Switch
+      schools any time from <a href="index.html">Choose Madhhab</a> — that starts a fresh session
+      rather than changing this one mid-way.</p>
+    </div>
+  </section>
+
+  <section style="padding-top:1rem">
+    <div class="wrap">
+
+      <div id="formPanel">
+        <div class="stepper" id="stepper">
+          <button class="step-dot active" data-step="0">01 Assets</button>
+          <button class="step-dot" data-step="1">02 Gold &amp; silver</button>
+          <button class="step-dot" data-step="2">03 Income mix</button>
+          <button class="step-dot" data-step="3">04 Debts</button>
+          <button class="step-dot" data-step="4">05 Receivables</button>
+        </div>
+
+        <!-- Step 1: cash assets -->
+        <div class="form-step active">
+          <h2>Cash &amp; liquid assets</h2>
+          <div class="field">
+            <label for="cash">Cash on hand (CAD)</label>
+            <input type="number" id="cash" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="field">
+            <label for="chequing">Chequing account balance</label>
+            <input type="number" id="chequing" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="field">
+            <label for="savings">Savings account balance</label>
+            <input type="number" id="savings" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="field">
+            <label for="investments">Halal investments (market value)</label>
+            <input type="number" id="investments" min="0" step="0.01" placeholder="0.00">
+            <p class="hint">Only investments you've screened as halal. Leave impermissible holdings out entirely — they're not zakatable and not purified by inclusion.</p>
+          </div>
+          <div class="field">
+            <label for="inventory">Business inventory intended for sale</label>
+            <input type="number" id="inventory" min="0" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+
+        <!-- Step 2: gold & silver -->
+        <div class="form-step">
+          <h2>Gold &amp; silver</h2>
+          <div class="field">
+            <label for="goldSilver">Total value of gold &amp; silver held</label>
+            <input type="number" id="goldSilver" min="0" step="0.01" placeholder="0.00">
+            <p class="hint" id="goldSilverHint">Include bullion, coins, and jewelry per your selected madhhab's rule — see Methodology for exactly which categories count for your school. Value only the metal itself, not stones or gems.</p>
+          </div>
+        </div>
+
+        <!-- Step 3: income classification -->
+        <div class="form-step">
+          <h2>Income mix</h2>
+          <div class="field">
+            <label for="haramAmount">Haram income identified this period</label>
+            <input type="number" id="haramAmount" min="0" step="0.01" placeholder="0.00">
+            <p class="hint">Kept separate from zakatable wealth automatically. Removing it isn't zakat — it should still be disposed of appropriately.</p>
+          </div>
+          <div class="field">
+            <label for="mixedHalalPortion">Halal portion of mixed-source income</label>
+            <input type="number" id="mixedHalalPortion" min="0" step="0.01" placeholder="0.00">
+            <p class="hint">If the haram portion of a mixed transaction has been separated out and disposed of, enter only the remaining halal amount here.</p>
+          </div>
+        </div>
+
+        <!-- Step 4: debts -->
+        <div class="form-step">
+          <h2>Debts</h2>
+          <div class="field">
+            <label for="debtNear">Debts due, overdue, or due within 12 months</label>
+            <input type="number" id="debtNear" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="field">
+            <label for="debtLong">Long-term debt balance (mortgage, student loan, etc.)</label>
+            <input type="number" id="debtLong" min="0" step="0.01" placeholder="0.00">
+            <p class="hint" id="debtLongHint">Whether this is deducted depends entirely on your selected madhhab — see Methodology.</p>
+          </div>
+        </div>
+
+        <!-- Step 5: receivables -->
+        <div class="form-step">
+          <h2>Money owed to you</h2>
+          <div class="field">
+            <label for="receivable">Amount others owe you</label>
+            <input type="number" id="receivable" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="field">
+            <label>Likelihood of repayment</label>
+            <div class="radio-row">
+              <label><input type="radio" name="receivableConfidence" id="receivableConfidence" value="likely" checked> Likely / expected</label>
+              <label><input type="radio" name="receivableConfidence" value="doubtful"> Doubtful / uncertain</label>
+            </div>
+            <p class="hint">Doubtful receivables are flagged for review rather than included — treatment still varies by madhhab.</p>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn" id="prevBtn">Back</button>
+          <button class="btn primary" id="nextBtn">Next</button>
+        </div>
+      </div>
+
+      <div id="resultsPanel" style="display:none;max-width:34rem">
+        <span class="eyebrow">Result — <span id="resultMadhhab"></span></span>
+        <p id="resultStatus" class="lede" style="margin-bottom:0.2em"></p>
+        <div class="result-figure" id="resultFigure">$0</div>
+        <div id="resultLines"></div>
+        <div class="warning-box" id="resultWarnings" style="display:none"></div>
+        <div class="step-nav" style="justify-content:flex-start;gap:1rem">
+          <button class="btn" onclick="document.getElementById('resultsPanel').style.display='none';document.getElementById('formPanel').style.display='block';">Edit answers</button>
+          <a class="btn primary" href="masarif.html">Give this amount &rarr;</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span class="built-by">Miqyas — a zakat instrument, not a fatwa. Consult a qualified scholar for unresolved cases.</span>
+    <nav>
+      <a href="methodology.html">Methodology</a>
+      <a href="masarif.html">Masarif</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="cookies.html">Cookies</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
