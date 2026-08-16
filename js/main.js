@@ -212,6 +212,14 @@
     });
   }
 
+  const savePdfBtn = document.getElementById("savePdfBtn");
+  if (savePdfBtn) {
+    savePdfBtn.addEventListener("click", () => {
+      document.title = "Miqyas Zakat Calculation";
+      window.print();
+    });
+  }
+
   // ---------- data reads ----------
   function num(id) {
     const el = document.getElementById(id);
