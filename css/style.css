@@ -341,11 +341,13 @@ section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
 .home-page .hero-copy .btn.primary { background: var(--brass); border-color: var(--brass); color: var(--ink); }
 .home-page .hero-copy .btn.primary:hover { background: var(--parchment); border-color: var(--parchment); color: var(--ink); }
 .arabic-mark { color: var(--brass) !important; font-family: var(--serif); font-size: 1.25rem; letter-spacing: 0.1em; margin: 0 0 0.8rem; }
-.home-page .ledger-note { background: var(--parchment); border-color: var(--brass); color: var(--ink); }
-.home-page .ledger-note::before { border-color: var(--line); }
-.home-page .ledger-note-top, .home-page .ledger-steps, .home-page .ledger-footnote { color: var(--ink); }
-.home-page .ledger-note .mono-label { color: var(--verdigris); }
-.home-page .ledger-note .ledger-mark, .home-page .ledger-note .step-number { color: var(--rust); }
+.home-page .ledger-note { background: var(--verdigris); border-color: var(--brass); color: var(--parchment); }
+.home-page .ledger-note::before { border-color: rgba(243,237,224,0.32); }
+.home-page .ledger-note-top, .home-page .ledger-steps, .home-page .ledger-footnote { color: var(--parchment); }
+.home-page .ledger-note .mono-label { color: var(--brass); }
+.home-page .ledger-note .ledger-mark, .home-page .ledger-note .step-number { color: var(--brass); }
+.home-page .ledger-note .ledger-rule { background: rgba(243,237,224,0.32); }
+.home-page .ledger-note small { color: rgba(243,237,224,0.78); }
 .home-page .home-bridge { background: var(--ink); border-color: var(--brass); }
 .home-page .home-bridge h2, .home-page .home-bridge p { color: var(--parchment); }
 .home-page .home-bridge .eyebrow, .home-page .home-bridge .text-link { color: var(--brass); }
@@ -356,7 +358,8 @@ section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
 
 /* ---------- accessible navigation and reading modes ---------- */
 .site-header { background: var(--ink); border-bottom-color: var(--brass); }
-.site-header .brand, .site-header .nav a, .site-header .nav-toggle { color: var(--parchment); }
+.site-header .brand, .site-header .nav a, .site-header .nav-toggle { color: var(--brass); }
+.site-header .brand .word { color: var(--brass); }
 .site-header .nav a:hover, .site-header .nav a.current { color: var(--brass); }
 .site-header .nav a.current { border-bottom-color: var(--brass); }
 .site-header .nav a .nav-icon { color: var(--parchment); }
@@ -407,3 +410,18 @@ body.accessibility-contrast { --parchment: #fffdf7; --parchment-dim: #eee7d8; --
 .eligibility-result.haram { border-left-color:var(--rust); }
 .eligibility-result.haram strong { color:var(--rust); }
 .eligibility-result.tentative { border-left-color:var(--grey); }
+
+/* ---------- homepage ayah and navigation refinement ---------- */
+:root { --nav-gold: #C99A4A; }
+.site-header .brand, .site-header .brand .word, .site-header .nav a, .site-header .nav-toggle { color: var(--nav-gold); }
+.site-header .nav a:hover, .site-header .nav a.current, .site-header .accessibility-toggle { color: var(--nav-gold); }
+.site-header .accessibility-toggle { border-color: var(--nav-gold); }
+.site-header .nav-toggle { border-color: var(--nav-gold); }
+.ayah-section { background: var(--parchment); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 3.25rem 0; }
+.ayah-wrap { max-width: 58rem; text-align: center; }
+.ayah-wrap .eyebrow { color: var(--verdigris); }
+.ayah-arabic { max-width: 52rem; margin: 1rem auto 0; color: var(--verdigris); font-family: "Noto Naskh Arabic", serif; font-size: clamp(1.5rem, 2.8vw, 2.2rem); line-height: 1.95; font-weight: 500; }
+.ayah-transliteration { max-width: 50rem; margin: 1.15rem auto 0; color: var(--grey); font-family: var(--serif); font-style: italic; font-size: 0.98rem; line-height: 1.65; }
+.ayah-translation { max-width: 45rem; margin: 0.9rem auto 0; color: var(--ink); font-family: var(--serif); font-size: 1.08rem; line-height: 1.65; }
+.ayah-reference { display: inline-block; margin-top: 1rem; color: var(--brass); font: 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+@media (max-width: 720px) { .ayah-section { padding: 2.4rem 0; } .ayah-arabic { font-size: 1.3rem; line-height: 1.95; } }

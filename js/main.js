@@ -100,7 +100,6 @@
 // ---------- work-sector classification and eligibility ----------
 (function () {
   const sector = document.getElementById("workSector");
-  const description = document.getElementById("workDescription");
   const result = document.getElementById("eligibilityResult");
   if (!sector || !result) return;
   const labels = { hanafi: "Hanafi", maliki: "Maliki", shafii: "Shafi’i", hanbali: "Hanbali" };
@@ -123,7 +122,6 @@
     result.hidden = false; result.className = `eligibility-result ${tone}`; result.innerHTML = `<strong>${title}</strong><p>${body}</p><small>Selected path: ${labels[madhhab] || "Madhhab not selected"}. Use the Classification control below to confirm or change the row status.</small>`;
   }
   sector.addEventListener("change", classify);
-  if (description) description.addEventListener("input", () => { if (sector.value === "custom") classify(); });
 })();
 
 // ---------- madhhab selector (index.html) ----------
@@ -252,6 +250,7 @@
           <option value="haram">Haram</option>
           <option value="mixed">Mixed</option>
           <option value="tentative">Tentative</option>
+          <option value="expense">Expense / excluded</option>
         </select>
       </div>
       <div>
@@ -268,12 +267,19 @@
     incomeTable.appendChild(row);
 
     const clsSelect = row.querySelector(".row-class");
-    if (data.classification && ["halal","haram","mixed","tentative"].includes(data.classification)) {
+    if (data.classification && ["halal","haram","mixed","tentative","expense"].includes(data.classification)) {
       clsSelect.value = data.classification;
     }
     updateRowState(row);
 
     clsSelect.addEventListener("change", () => updateRowState(row));
+    const categoryInput = row.querySelector(".row-category");
+    categoryInput.addEventListener("input", () => {
+      const current = clsSelect.value;
+      if (!categoryInput.value.trim() || !["", "tentative"].includes(current)) return;
+      clsSelect.value = inferClassification(categoryInput.value);
+      updateRowState(row);
+    });
     row.querySelector(".row-remove").addEventListener("click", () => row.remove());
     return row;
   }
@@ -281,6 +287,7 @@
   function updateRowState(row) {
     const cls = row.querySelector(".row-class").value;
     row.classList.toggle("is-mixed", cls === "mixed");
+    row.classList.toggle("is-expense", cls === "expense");
     const status = row.querySelector(".row-status");
     const flagged = cls === "" || cls === "tentative";
     row.classList.toggle("flagged", flagged);
@@ -288,6 +295,8 @@
       status.textContent = "Choose Halal, Haram, Mixed, or Tentative before continuing.";
     } else if (cls === "tentative") {
       status.textContent = "Marked tentative; Scholar Review Required, excluded from zakat for now.";
+    } else if (cls === "expense") {
+      status.textContent = "Recognized as an expense; excluded from zakat assets.";
     } else {
       status.textContent = "";
     }
@@ -391,9 +400,11 @@
 
   function inferClassification(category, description = "") {
     const text = `${category || ""} ${description || ""}`.toLowerCase();
+    const expense = /\b(monthly phone bill|phone bill|cell phone bill|internet bill|utility bill|utilities|advertising expense|business advertising|business expense|office expense|software subscription|subscription fee|membership fee)\b/;
     const haram = /\b(gambling|betting|casino|alcohol|liquor|wine|beer|pork|swine|adult entertainment|porn|illegal drug|drug trafficking|interest-only lending|riba)\b/;
     const mixed = /\b(bank|banking|finance|financial|loan|lending|mortgage|insurance|investment|broker|brokerage|advertising|media|government|legal|compliance|conventional)\b/;
     const halal = /\b(masjid|mosque|islamic centre|islamic center|imam|madrasa|madrasah|quran|charity|nonprofit|non-profit|zakat|sadaqah|halal|teaching|teacher|education|healthcare|medical|nursing|software|engineering|construction|trades|freelance design|design|retail|restaurant|food|salary|wages|tips|gift|inheritance|rent|rental)\b/;
+    if (expense.test(text)) return "expense";
     if (haram.test(text)) return "haram";
     if (mixed.test(text)) return "mixed";
     if (halal.test(text)) return "halal";
@@ -498,6 +509,8 @@
         incomeFlags.push(`"${r.category}" needs a Halal, Haram, Mixed, or Tentative classification before it can be included.`);
       } else if (r.classification === "tentative") {
         incomeFlags.push(`"${r.category}" is marked Tentative; Scholar Review Required. Excluded from zakat for now.`);
+      } else if (r.classification === "expense") {
+        incomeFlags.push(`"${r.category}" was recognized as an expense and excluded from zakat assets.`);
       } else if (r.classification === "halal") {
         incomeHalalTotal += r.amount;
       } else if (r.classification === "haram") {
