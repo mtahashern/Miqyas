@@ -71,6 +71,15 @@
             <p class="hint">Accepted files include CSV, TSV, Excel, PDF, TXT, and JSON. The importer looks for category, classification, amount, and halal portion wherever they appear. Missing values stay blank for you to complete. Uploading replaces the rows below.</p>
           </div>
 
+          <section class="eligibility-panel" aria-labelledby="eligibilityHeading">
+            <span class="eyebrow">Work and income check</span>
+            <h3 id="eligibilityHeading">How should this income be reviewed?</h3>
+            <p class="hint">Choose the closest sector or describe the work. Miqyas gives a preliminary classification signal, not a fatwa. If the work is mixed, regulated, disputed, or unclear, select Tentative and ask a qualified scholar.</p>
+            <div class="field"><label for="workSector">Industry or work type</label><select id="workSector"><option value="">Choose a sector</option><optgroup label="Usually permissible work"><option value="halal-education">Education and teaching</option><option value="halal-health">Healthcare and medicine</option><option value="halal-software">Software, engineering, or technology</option><option value="halal-trades">Construction, trades, or manufacturing</option><option value="halal-retail">General retail or services</option><option value="halal-food">Halal food or restaurant work</option><option value="halal-charity">Charity, nonprofit, or community services</option></optgroup><optgroup label="Requires closer review"><option value="mixed-finance">Conventional finance, lending, or interest-related work</option><option value="mixed-insurance">Insurance, investment, or brokerage work</option><option value="mixed-law">Legal, compliance, or government work</option><option value="mixed-media">News, entertainment, or advertising</option><option value="mixed-alcohol">A business with both permissible and prohibited products</option></optgroup><optgroup label="Generally prohibited sector indicators"><option value="haram-gambling">Gambling, betting, or casino work</option><option value="haram-alcohol">Alcohol production, sales, or service</option><option value="haram-pork">Pork production, sales, or service</option><option value="haram-adult">Explicit adult entertainment</option><option value="haram-tobacco">Tobacco or nicotine sales</option><option value="haram-drugs">Illegal drugs or unlawful trade</option></optgroup><option value="custom">Other or not sure</option></select></div>
+            <div class="field"><label for="workDescription">Optional description</label><input type="text" id="workDescription" placeholder="For example, freelance graphic design for a restaurant"></div>
+            <div id="eligibilityResult" class="eligibility-result" role="status" hidden></div>
+          </section>
+
           <div class="income-table" id="incomeTable"></div>
           <button class="btn" type="button" id="addRowBtn">+ Add income source</button>
 

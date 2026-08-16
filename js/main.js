@@ -11,36 +11,119 @@
   }
 })();
 
+// ---------- accessibility reading controls ----------
+(function () {
+  const toggle = document.getElementById("accessibilityToggle");
+  const menu = document.getElementById("accessibilityMenu");
+  if (!toggle || !menu) return;
+  const body = document.body;
+  const saved = JSON.parse(localStorage.getItem("miqyas_accessibility") || "{}");
+  body.classList.toggle("accessibility-larger", saved.larger === true);
+  body.classList.toggle("accessibility-contrast", saved.contrast === true);
+  toggle.addEventListener("click", () => {
+    const open = !menu.hidden;
+    menu.hidden = open;
+    toggle.setAttribute("aria-expanded", String(!open));
+  });
+  menu.querySelectorAll("[data-accessibility]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const choice = button.dataset.accessibility;
+      if (choice === "larger") body.classList.toggle("accessibility-larger");
+      if (choice === "contrast") body.classList.toggle("accessibility-contrast");
+      if (choice === "reset") { body.classList.remove("accessibility-larger", "accessibility-contrast"); }
+      localStorage.setItem("miqyas_accessibility", JSON.stringify({ larger: body.classList.contains("accessibility-larger"), contrast: body.classList.contains("accessibility-contrast") }));
+    });
+  });
+})();
+
 // ---------- Masarif directory ----------
 (function () {
   const filter = document.getElementById("regionFilter");
-  const cards = Array.from(document.querySelectorAll("#organizationList [data-region]"));
+  const list = document.getElementById("organizationList");
   const empty = document.getElementById("filterEmpty");
-  if (filter && cards.length) {
-    filter.addEventListener("change", () => {
-      const value = filter.value;
-      let visible = 0;
-      cards.forEach((card) => {
-        const show = value === "all" || card.dataset.region === value;
-        card.hidden = !show;
-        if (show) visible += 1;
-      });
-      if (empty) empty.hidden = visible !== 0;
+  const prompt = document.getElementById("directoryPrompt");
+  const listings = {
+    "st-catharines": [
+      { name: "Islamic Society of St. Catharines | Masjid An-Noor", type: "Local organization", categories: "Community support | Confirm zakat", description: "A St. Catharines Islamic community centre with prayer, education, community services, and a donate page. Confirm the current zakat designation directly.", url: "https://islamicsocietyofstcatharines.ca/donate" },
+      { name: "National Zakat Foundation Canada", type: "Regional referral", categories: "Al-fuqara | Al-masakin | Al-gharimin", description: "A Canadian zakat organization with a formal application and donation pathway. Use its instructions to confirm service for your city.", url: "https://www.nzfcanada.com/" },
+      { name: "Muslim Food Bank Niagara Falls", type: "Regional referral", categories: "Al-fuqara | Al-masakin", description: "A Niagara food-support program that states it is accredited to accept zakat. Confirm delivery or eligibility for St. Catharines before giving.", url: "https://muslimfoodbank.com/location/muslim-food-bank-niagara-falls/" }
+    ],
+    "niagara-falls": [
+      { name: "Niagara Falls Islamic Center | Masjid Alsalam", type: "Local organization", categories: "Community support | Confirm zakat", description: "A Niagara Falls Islamic centre offering prayer, education, and community services. Confirm its current zakat collection and distribution policy.", url: "https://niagarafallsislamiccenter.com/" },
+      { name: "Muslim Food Bank Niagara Falls", type: "Local program", categories: "Al-fuqara | Al-masakin", description: "A Niagara Falls food-support program that states it is accredited to accept zakat for vulnerable families.", url: "https://muslimfoodbank.com/location/muslim-food-bank-niagara-falls/" },
+      { name: "National Zakat Foundation Canada", type: "Regional organization", categories: "Al-fuqara | Al-masakin | Al-gharimin", description: "A Canadian zakat organization with a formal application and donation pathway for people needing support.", url: "https://www.nzfcanada.com/" }
+    ],
+    "welland": [
+      { name: "Masjid Ameer Hamza", type: "Local organization", categories: "Community support | Confirm zakat", description: "A Welland mosque at 109 Chaffey Street. Visit its official page to confirm current zakat or local assistance options.", url: "https://masjidameerhamza.org/" },
+      { name: "National Zakat Foundation Canada", type: "Regional referral", categories: "Al-fuqara | Al-masakin | Al-gharimin", description: "A Canadian zakat organization with an application pathway. Confirm service availability for Welland before donating.", url: "https://www.nzfcanada.com/" },
+      { name: "Muslim Food Bank Niagara Falls", type: "Regional referral", categories: "Al-fuqara | Al-masakin", description: "A Niagara food-support program that states it is accredited to accept zakat. Confirm whether Welland households are served.", url: "https://muslimfoodbank.com/location/muslim-food-bank-niagara-falls/" }
+    ],
+    "thorold": [
+      { name: "Mosque Aisha", type: "Local-area organization", categories: "Community support | Confirm zakat", description: "An Islamic community organization serving the Niagara area, including Thorold-area residents. Confirm current donation and zakat services directly.", url: "https://www.mosqueaisha.ca/" },
+      { name: "Peace Community Center", type: "Local-area organization", categories: "Community support | Confirm zakat", description: "A masjid and Muslim community centre on Thorold Townline Road. Confirm whether it currently accepts or distributes zakat.", url: "https://peacecommunitycenter.com/" },
+      { name: "National Zakat Foundation Canada", type: "Regional referral", categories: "Al-fuqara | Al-masakin | Al-gharimin", description: "A Canadian zakat organization with a formal application and donation pathway. Confirm service for Thorold.", url: "https://www.nzfcanada.com/" }
+    ],
+    "port-colborne": [
+      { name: "National Zakat Foundation Canada", type: "Regional referral", categories: "Al-fuqara | Al-masakin | Al-gharimin", description: "A Canadian zakat organization with a formal application and donation pathway. Confirm service availability for Port Colborne.", url: "https://www.nzfcanada.com/" },
+      { name: "Muslim Food Bank Niagara Falls", type: "Regional referral", categories: "Al-fuqara | Al-masakin", description: "A Niagara food-support program that states it is accredited to accept zakat. Confirm whether Port Colborne households are served.", url: "https://muslimfoodbank.com/location/muslim-food-bank-niagara-falls/" },
+      { name: "Islamic Society of St. Catharines | Masjid An-Noor", type: "Regional referral", categories: "Community support | Confirm zakat", description: "A Niagara Islamic community centre with community services and a donate page. Ask whether it can refer Port Colborne residents.", url: "https://islamicsocietyofstcatharines.ca/donate" }
+    ]
+  };
+  function render(city) {
+    if (!list) return;
+    list.innerHTML = "";
+    const rows = listings[city] || [];
+    rows.forEach((item) => {
+      const card = document.createElement("article");
+      card.className = "info-card";
+      card.innerHTML = `<span class="listing-type">${item.type}</span><h3>${item.name}</h3><span class="tag">${item.categories}</span><p>${item.description}</p><p><a href="${item.url}" target="_blank" rel="noopener">Visit official page <span aria-hidden="true">→</span></a></p>`;
+      list.appendChild(card);
     });
+    if (prompt) prompt.hidden = Boolean(city);
+    if (empty) empty.hidden = Boolean(rows.length || !city);
   }
+  if (filter) filter.addEventListener("change", () => render(filter.value));
+  render("");
 
   const form = document.getElementById("masarifRequestForm");
   const status = document.getElementById("masarifFormStatus");
-  if (form && status) {
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const org = document.getElementById("orgName").value.trim();
-      const email = document.getElementById("orgContact").value.trim();
-      status.textContent = `Thank you. ${org} was recorded for review. We will follow up at ${email}.`;
-      status.className = "hint csv-status";
-      form.reset();
-    });
+  if (form && status) form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const org = document.getElementById("orgName").value.trim();
+    const email = document.getElementById("orgContact").value.trim();
+    status.textContent = `Thank you. ${org} was recorded for review. We will follow up at ${email}.`;
+    status.className = "hint csv-status";
+    form.reset();
+  });
+})();
+
+// ---------- work-sector classification and eligibility ----------
+(function () {
+  const sector = document.getElementById("workSector");
+  const description = document.getElementById("workDescription");
+  const result = document.getElementById("eligibilityResult");
+  if (!sector || !result) return;
+  const labels = { hanafi: "Hanafi", maliki: "Maliki", shafii: "Shafi’i", hanbali: "Hanbali" };
+  const notes = {
+    hanafi: "Under the Hanafi path selected for this session, permissible earnings can become zakatable assets once the relevant nisab and hawl conditions are met. Review debts and receivables using the Hanafi rules shown later.",
+    maliki: "Under the Maliki path selected for this session, permissible earnings can become zakatable assets once the relevant nisab and continuous hawl conditions are met. A scholar should review mixed or disputed work.",
+    shafii: "Under the Shafi’i path selected for this session, permissible earnings can become zakatable assets once the relevant nisab and continuous hawl conditions are met. Personal debt is not automatically deducted in this path.",
+    hanbali: "Under the Hanbali path selected for this session, permissible earnings can become zakatable assets once the relevant nisab and continuous hawl conditions are met. Qualifying debts are handled according to the Hanbali rules shown later."
+  };
+  function classify() {
+    const value = sector.value;
+    if (!value) { result.hidden = true; return; }
+    const madhhab = sessionStorage.getItem("miqyas_madhhab") || "hanafi";
+    let title = "Preliminary review: Tentative";
+    let body = "This category needs a person-by-person review. Keep the income unclassified until you can describe the actual work and ask a qualified scholar.";
+    let tone = "tentative";
+    if (value.startsWith("halal-")) { title = "Preliminary signal: Usually permissible"; body = `${notes[madhhab] || notes.hanafi} The signal is not a final ruling.`; tone = "halal"; }
+    if (value.startsWith("mixed-")) { title = "Preliminary signal: Mixed or disputed"; body = `This sector can contain both permissible and impermissible duties or income sources. Under the ${labels[madhhab] || "selected madhhab"} path, separate the actual income streams and ask a qualified scholar before marking the row Halal.`; tone = "mixed"; }
+    if (value.startsWith("haram-")) { title = "Preliminary signal: Prohibited-income indicator"; body = "Do not count prohibited income as zakatable wealth by simply adding it to the zakat total. Record it separately, do not treat disposal as zakat, and ask a qualified scholar about the appropriate next step."; tone = "haram"; }
+    result.hidden = false; result.className = `eligibility-result ${tone}`; result.innerHTML = `<strong>${title}</strong><p>${body}</p><small>Selected path: ${labels[madhhab] || "Madhhab not selected"}. Use the Classification control below to confirm or change the row status.</small>`;
   }
+  sector.addEventListener("change", classify);
+  if (description) description.addEventListener("input", () => { if (sector.value === "custom") classify(); });
 })();
 
 // ---------- madhhab selector (index.html) ----------
@@ -244,6 +327,17 @@
     defaults.forEach(addIncomeRow);
 
     document.getElementById("addRowBtn").addEventListener("click", () => addIncomeRow());
+
+    const workSector = document.getElementById("workSector");
+    if (workSector) workSector.addEventListener("change", () => {
+      const firstRow = incomeTable.querySelector(".income-row");
+      const classification = firstRow?.querySelector(".row-class");
+      if (!classification) return;
+      const value = workSector.value;
+      const suggested = value.startsWith("halal-") ? "halal" : value.startsWith("haram-") ? "haram" : value.startsWith("mixed-") ? "mixed" : "";
+      classification.value = suggested;
+      classification.dispatchEvent(new Event("change"));
+    });
 
     // ---- CSV template download ----
     const templateLink = document.getElementById("csvTemplateLink");

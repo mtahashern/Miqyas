@@ -4,81 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Miqyas | Masarif</title>
+<meta name="description" content="A city-based directory of zakat and Islamic community organizations serving Niagara cities.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="wrap">
-    <a href="index.html" class="brand"><svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="2" y1="16" x2="22" y2="16" stroke="#33544B" stroke-width="1.6"/><circle cx="14" cy="16" r="3" fill="#B8863B"/></svg><span class="word">Miqyas</span></a>
-    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav">Menu</button>
-    <nav class="nav" id="siteNav">
-      <a href="index.html"><span>Choose Madhhab</span></a>
-      <a href="methodology.html"><span>Methodology</span></a>
-      <a href="masarif.html" class="current"><span>Masarif</span></a>
-      <a href="about.html"><span>About</span></a>
-    </nav>
-  </div>
-</header>
+<header class="site-header"><div class="wrap">
+  <a href="index.html" class="brand" aria-label="Miqyas home"><svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="2" y1="16" x2="22" y2="16" stroke="#B8863B" stroke-width="1.6"/><circle cx="14" cy="16" r="3" fill="#B8863B"/></svg><span class="word">Miqyas</span></a>
+  <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav">Menu</button>
+  <nav class="nav" id="siteNav" aria-label="Main navigation"><a href="index.html"><span>Choose Madhhab</span></a><a href="methodology.html"><span>Methodology</span></a><a href="masarif.html" class="current"><span>Masarif</span></a><a href="about.html"><span>About</span></a><div class="accessibility-control"><button class="accessibility-toggle" id="accessibilityToggle" aria-expanded="false" aria-controls="accessibilityMenu">Accessibility</button><div class="accessibility-menu" id="accessibilityMenu" hidden><strong>Reading options</strong><button type="button" data-accessibility="larger">Larger text</button><button type="button" data-accessibility="contrast">Higher contrast</button><button type="button" data-accessibility="reset">Reset view</button></div></div></nav>
+</div></header>
 <main>
-  <section style="padding-bottom:0">
-    <div class="wrap">
-      <span class="eyebrow">Masarif | مصارف</span>
-      <h1>Where the number goes</h1>
-      <p class="lede">Masarif is a directory of organizations that distribute zakat, tagged by which of the eight classical categories in Surah At-Tawbah 9:60 their work supports. Miqyas does not process payments. Every entry sends you to the organization’s own donation or information page. The directory begins in Niagara Region and grows only after each listing is checked.</p>
-      <p class="hint">Before donating, confirm the organization’s current zakat policy and follow its instructions for designating your gift.</p>
-    </div>
-  </section>
-
-  <section style="padding-top:1rem">
-    <div class="wrap">
-      <div style="display:flex;justify-content:space-between;gap:1rem;align-items:end;flex-wrap:wrap">
-        <div><span class="eyebrow">Niagara Region | reviewed starting list</span><h2 style="margin-bottom:0">Organizations serving Niagara</h2></div>
-        <label for="regionFilter" class="sr-only">Filter by city</label>
-        <select id="regionFilter" style="padding:0.65em 0.7em;border:1px solid var(--line);background:var(--parchment);font-family:var(--sans);font-size:0.95rem">
-          <option value="all">All Niagara locations</option><option value="niagara-falls">Niagara Falls</option><option value="st-catharines">St. Catharines</option><option value="welland">Welland</option><option value="regional">Niagara Region</option>
-        </select>
-      </div>
-      <div class="card-list" id="organizationList">
-        <article class="info-card" data-region="niagara-falls">
-          <h3>Muslim Food Bank Niagara Falls <span class="tag">Al-fuqara | Al-masakin</span></h3>
-          <p>A local Muslim Food Bank location that states it is accredited to accept zakat and supports vulnerable families with food assistance.</p>
-          <p><a href="https://muslimfoodbank.com/location/muslim-food-bank-niagara-falls/" target="_blank" rel="noopener">Visit their donation and program page <span aria-hidden="true">→</span></a></p>
-        </article>
-        <article class="info-card" data-region="st-catharines">
-          <h3>Islamic Society of St. Catharines <span class="tag">Local community support</span></h3>
-          <p>A St. Catharines Islamic society serving the local Muslim community. Contact the society directly to confirm whether a current zakat distribution program is available.</p>
-          <p><a href="https://isscniagara.org/" target="_blank" rel="noopener">Visit their organization page <span aria-hidden="true">→</span></a></p>
-        </article>
-        <article class="info-card" data-region="regional">
-          <h3>National Zakat Foundation Canada <span class="tag">Al-fuqara | Al-masakin | Al-gharimin</span></h3>
-          <p>A Canadian zakat organization that connects donors with local and national assistance programs. Use its application and donation instructions to direct support where it is needed.</p>
-          <p><a href="https://www.nzfcanada.com/" target="_blank" rel="noopener">Visit their donation page <span aria-hidden="true">→</span></a></p>
-        </article>
-      </div>
-      <p id="filterEmpty" class="hint" hidden>No current listing matches that location. Know an organization in this city? Request it below.</p>
-      <p class="hint" style="color:var(--grey);font-size:0.85rem;margin-top:0.8rem">Listings are informational. Miqyas does not hold funds, verify eligibility for an organization, or replace the organization’s own policies.</p>
-    </div>
-  </section>
-
-  <section style="padding-top:1rem">
-    <div class="wrap">
-      <hr class="hairline" style="margin-bottom:2rem">
-      <span class="eyebrow">Expanding beyond Niagara</span>
-      <h2>Request Masarif in your region</h2>
-      <p class="lede">Each new region is added only after its organizations are reviewed individually. If you run or know a zakat-distributing organization outside Niagara, submit the details below. Nothing goes live automatically.</p>
-      <form id="masarifRequestForm" class="wrap" style="padding:0;max-width:30rem;margin-top:1.5rem">
-        <div class="field"><label for="orgName">Organization name</label><input type="text" id="orgName" required></div>
-        <div class="field"><label for="orgRegion">Region or city</label><input type="text" id="orgRegion" placeholder="For example, Welland" required></div>
-        <div class="field"><label for="orgCategory">Classical category of work</label><select id="orgCategory"><option>Al-fuqara (the poor)</option><option>Al-masakin (the needy)</option><option>Al-gharimin (those in debt)</option><option>Ibn al-sabil (the wayfarer)</option><option>Other or not sure</option></select></div>
-        <div class="field"><label for="orgDonationUrl">Organization donation or information page</label><input type="url" id="orgDonationUrl" placeholder="https://" required></div>
-        <div class="field"><label for="orgContact">Contact email</label><input type="email" id="orgContact" required></div>
-        <button class="btn primary" type="submit">Submit for review</button>
-        <p id="masarifFormStatus" class="hint" role="status"></p>
-      </form>
-    </div>
-  </section>
+  <section style="padding-bottom:0"><div class="wrap"><span class="eyebrow">Masarif | مصارف</span><h1>Where the number goes</h1><p class="lede">Choose the city closest to you. Masarif links to mosques, community organizations, and zakat programs. Miqyas does not collect donations. Confirm each organization’s current zakat policy before giving.</p></div></section>
+  <section style="padding-top:1rem"><div class="wrap">
+    <div class="directory-toolbar"><div><span class="eyebrow">City directory</span><h2>Find support or a place to give</h2></div><label for="regionFilter" class="sr-only">Choose a city</label><select id="regionFilter"><option value="">Choose a city</option><option value="st-catharines">St. Catharines</option><option value="niagara-falls">Niagara Falls</option><option value="welland">Welland</option><option value="thorold">Thorold</option><option value="port-colborne">Port Colborne</option></select></div>
+    <p id="directoryPrompt" class="directory-prompt">Select a city to view its three starting listings.</p>
+    <div class="card-list directory-list" id="organizationList"></div>
+    <p id="filterEmpty" class="hint" hidden>No verified starting listing is available for that city yet. Use the request form below to suggest one.</p>
+    <p class="hint directory-note">Some listings are local and some are regional referrals. A referral is not a claim that the organization has a branch in the selected city.</p>
+  </div></section>
+  <section style="padding-top:1rem"><div class="wrap"><hr class="hairline" style="margin-bottom:2rem"><span class="eyebrow">Grow the directory</span><h2>Request a city or organization</h2><p class="lede">If you know a zakat-distributing organization in Niagara, submit its official page. Nothing goes live automatically. Each listing is checked individually.</p>
+    <form id="masarifRequestForm" class="wrap" style="padding:0;max-width:30rem;margin-top:1.5rem"><div class="field"><label for="orgName">Organization name</label><input type="text" id="orgName" required></div><div class="field"><label for="orgRegion">City</label><select id="orgRegion" required><option value="">Choose a city</option><option>St. Catharines</option><option>Niagara Falls</option><option>Welland</option><option>Thorold</option><option>Port Colborne</option></select></div><div class="field"><label for="orgCategory">Classical category of work</label><select id="orgCategory"><option>Al-fuqara (the poor)</option><option>Al-masakin (the needy)</option><option>Al-gharimin (those in debt)</option><option>Ibn al-sabil (the wayfarer)</option><option>Other or not sure</option></select></div><div class="field"><label for="orgDonationUrl">Official organization page</label><input type="url" id="orgDonationUrl" placeholder="https://" required></div><div class="field"><label for="orgContact">Contact email</label><input type="email" id="orgContact" required></div><button class="btn primary" type="submit">Submit for review</button><p id="masarifFormStatus" class="hint" role="status"></p></form>
+  </div></section>
 </main>
 <footer class="site-footer"><div class="wrap"><span class="built-by">Miqyas was created by Muhammad Taha, Fatima Waqas, and Zainib Waqas.</span><nav><a href="methodology.html">Methodology</a><a href="masarif.html">Masarif</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="cookies.html">Cookies</a></nav></div></footer>
 <script src="js/main.js"></script>
