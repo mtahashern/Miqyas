@@ -1,6 +1,6 @@
 # Miqyas
 
-A zakat calculator covering four madhahib — Hanafi, Maliki, Shafi'i, and Hanbali — kept strictly
+A zakat calculator covering four madhahib: Hanafi, Maliki, Shafi'i, and Hanbali- kept strictly
 separate. Pick one school on the homepage; every question and result in that session draws only
 from that school's rules.
 
@@ -10,7 +10,7 @@ directory).
 
 ## Status
 
-Working prototype. Plain HTML/CSS/JS, no build step, no framework — deployable as-is on GitHub
+Working prototype. Plain HTML/CSS/JS, no build step, no framework, deployable as-is on GitHub
 Pages.
 
 - [x] Madhhab selector, session-locked
@@ -19,7 +19,7 @@ Pages.
 - [x] Results breakdown with flags for review
 - [x] Methodology, Masarif, About, Privacy, Cookies pages
 - [ ] Update `GOLD_PRICE_PER_GRAM_CAD` and `SILVER_PRICE_PER_GRAM_CAD` in `js/main.js`
-      with that day's actual CAD spot price — never wire these to a live price API
+      with that day's actual CAD spot price, never wire these to a live price API
 - [ ] Replace Masarif placeholder organizations with verified Niagara listings
 - [ ] Get the Methodology page's four rule sets checked against real sourcing before launch
 - [ ] Fill in `about.html` with real name/contact
