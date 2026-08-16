@@ -272,7 +272,8 @@ section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
 .income-summary .num { font-family: var(--mono); font-size: 1.25rem; display: block; margin-top: 0.2rem; }
 .income-summary .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--grey); }
 .income-summary .halal .num { color: var(--verdigris); }
-.income-summary .haram .num { color: var(--rust); }
+  .income-summary .haram .num { color: var(--rust); }
+  .income-summary .expense .num { color: var(--grey); }
 
 /* ---------- homepage landing composition ---------- */
 .home-hero { padding-top: clamp(3rem, 8vw, 6.5rem); padding-bottom: clamp(3rem, 7vw, 6rem); border-bottom: 1px solid var(--line); }

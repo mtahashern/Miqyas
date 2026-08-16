@@ -408,7 +408,7 @@
 
   function inferClassification(category, description = "") {
     const text = `${category || ""} ${description || ""}`.toLowerCase();
-    const expense = /\b(monthly phone bill|phone bill|cell phone bill|internet bill|utility bill|utilities|advertising expense|business advertising|business expense|office expense|business supplies?|office supplies?|supplies purchase|equipment purchase|transportation expense|travel expense|mileage expense|transit expense|fuel expense|software subscription|subscription fee|membership fee)\b/;
+    const expense = /\b(monthly phone bill|phone bill|cell phone bill|internet bill|utility bill|utilities|advertising expense|business advertising|business expense|office expense|business supplies?|office supplies?|supplies purchase|equipment purchase|transportation expense|travel expense|mileage expense|transit expense|fuel expense|software subscription|software expense|software purchase|software license|app subscription|cloud subscription|hosting expense|subscription fee|membership fee)\b/;
     const haram = /\b(gambling|betting|casino|alcohol|liquor|wine|beer|pork|swine|adult entertainment|porn|illegal drug|drug trafficking|interest-only lending|riba)\b/;
     const mixed = /\b(bank|banking|finance|financial|loan|lending|mortgage|insurance|investment|broker|brokerage|advertising|media|government|legal|compliance|conventional)\b/;
     const halal = /\b(masjid|mosque|islamic centre|islamic center|imam|madrasa|madrasah|quran|charity|nonprofit|non-profit|zakat|sadaqah|halal|teaching|teacher|education|healthcare|medical|nursing|software|engineering|construction|trades|freelance design|freelance|professional work|professional services|consulting|design|retail|restaurant|food|salary|wages|tips|gift|inheritance|rent|rental)\b/;
@@ -458,10 +458,11 @@
       lines.push(...Array.from(grouped.values()).map((line) => line.trim()).filter(Boolean));
     }
     return lines.map((line) => {
-      const classificationMatch = line.match(/\b(halal|haram|mixed|tentative)\b/i);
+      const classificationMatch = line.match(/\b(halal|haram|mixed|tentative|expense)\b/i);
       const numbers = line.match(/(?:CAD\s*|CA\$|\$)?\s*\d[\d,]*(?:\.\d{1,2})?/gi) || [];
       const category = line.replace(classificationMatch?.[0] || "", "").replace(/(?:CAD\s*|CA\$|\$)?\s*\d[\d,]*(?:\.\d{1,2})?/gi, "").replace(/[,:;|]+$/, "").trim();
-      return { category: category || "", classification: classificationMatch ? classificationMatch[1].toLowerCase() : inferClassification(category), amount: extractAmount(numbers[0] || ""), halal_portion: extractAmount(numbers[1] || "") };
+      const detectedClass = classificationMatch ? classificationMatch[1].toLowerCase() : inferClassification(category);
+      return { category: category || "", classification: ["halal", "haram", "mixed", "tentative", "expense"].includes(detectedClass) ? detectedClass : "tentative", amount: extractAmount(numbers[0] || ""), halal_portion: extractAmount(numbers[1] || "") };
     }).filter((row) => row.category || row.amount);
   }
 
@@ -511,7 +512,9 @@
 
     let incomeHalalTotal = 0;   // zakatable portion of income
     let incomeHaramTotal = 0;   // separated out, not zakatable, must be disposed of
-    let incomeFlags = [];
+    let incomeFlags = [];       // genuine unresolved or scholar-review items
+    let incomeNotes = [];       // informational classification notes, not review flags
+    let incomeExpenseTotal = 0; // excluded operating expenses
 
     incomeRows.forEach((r) => {
       if (r.classification === "") {
@@ -519,7 +522,8 @@
       } else if (r.classification === "tentative") {
         incomeFlags.push(`"${r.category}" is marked Tentative; Scholar Review Required. Excluded from zakat for now.`);
       } else if (r.classification === "expense") {
-        incomeFlags.push(`"${r.category}" was recognized as an expense and excluded from zakat assets.`);
+        incomeExpenseTotal += r.amount;
+        incomeNotes.push(`"${r.category}" was recognized as an expense and excluded from zakat assets.`);
       } else if (r.classification === "halal") {
         incomeHalalTotal += r.amount;
       } else if (r.classification === "haram") {
@@ -607,6 +611,7 @@
       summary.innerHTML = `
         <div class="halal"><span class="label">Zakatable income (halal / disposed-mixed)</span><span class="num">$${incomeHalalTotal.toLocaleString()}</span></div>
         <div class="haram"><span class="label">Haram income; separate, not zakatable</span><span class="num">$${incomeHaramTotal.toLocaleString()}</span></div>
+        <div class="expense"><span class="label">Recognized expenses; excluded from assets</span><span class="num">$${incomeExpenseTotal.toLocaleString()}</span></div>
       `;
     }
 
@@ -645,7 +650,8 @@
     if (explainBox) {
       explainBox.innerHTML = `<strong>Why this figure, under ${MADHHAB_LABEL[MADHHAB]}:</strong> ${MADHHAB_EXPLANATION[MADHHAB]} ` +
         `Net zakatable wealth of $${zakatable_final.toLocaleString()} is compared against the silver nisab of $${ACTIVE_NISAB_CAD.toLocaleString()} CAD. ` +
-        (aboveNisab ? `Since it meets or exceeds nisab, zakat is 2.5% of that amount.` : `Since it falls short of nisab, no zakat is due this year.`);
+        (aboveNisab ? `Since it meets or exceeds nisab, zakat is 2.5% of that amount.` : `Since it falls short of nisab, no zakat is due this year.`) +
+        (incomeNotes.length ? `<br><strong>Classification notes:</strong> ${incomeNotes.join(" ")}` : "");
     }
 
     document.getElementById("formPanel").style.display = "none";
